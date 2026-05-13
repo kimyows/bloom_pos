@@ -13,6 +13,7 @@ if (!is_dir("uploads")) {
 // Khylexoxo
 date_default_timezone_set("Asia/Manila");  
 
+// hi - mariane
 include 'Product.inc.php';
 $sampleProducts = [
   'flowers'     => new FlowerProduct('FLW-001', 'Red Roses', 99.00, 50),
