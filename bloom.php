@@ -10,7 +10,7 @@ if (!is_dir("uploads")) {
     mkdir("uploads", 0777, true);
 }
 
-
+// Set default timezone for consistent date handling
 date_default_timezone_set("Asia/Manila");
 
 include 'Product.inc.php';
