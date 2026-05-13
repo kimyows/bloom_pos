@@ -10,7 +10,8 @@ if (!is_dir("uploads")) {
     mkdir("uploads", 0777, true);
 }
 
-date_default_timezone_set("Asia/Manila"); 
+date_default_timezone_set("Asia/Manila");  // trial one two three four TRIAL PU
+// tainang git to
 
 include 'Product.inc.php';
 $sampleProducts = [
