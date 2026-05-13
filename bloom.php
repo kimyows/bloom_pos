@@ -1,5 +1,4 @@
 <?php
-//mara try
 session_start();
 // ── Cookies: Remember Me ─────────────────────────────────────
 $remembered_id = isset($_COOKIE['bloom_remember_id'])
@@ -10,10 +9,8 @@ if (!is_dir("uploads")) {
     mkdir("uploads", 0777, true);
 }
 
-// Khylexoxo
 date_default_timezone_set("Asia/Manila");  
 
-// hi - mariane
 include 'Product.inc.php';
 $sampleProducts = [
   'flowers'     => new FlowerProduct('FLW-001', 'Red Roses', 99.00, 50),
@@ -123,7 +120,6 @@ if ($page === "register" && $_SERVER["REQUEST_METHOD"] === "POST") {
     }
 }
 
-
 // ── Logout ────────────────────────────────────────────────────
 if ($page === "logout") {
   setcookie('bloom_remember_id', '', time() - 3600, '/'); // ← delete cookie
@@ -131,7 +127,6 @@ if ($page === "logout") {
   header("Location: ?page=login");
   exit;
 }
-
 
 // ── Checkout – Finalize Sale ──────────────────────────────────
 if ($page === "checkout" && isset($_POST["finalize_sale"])) {
