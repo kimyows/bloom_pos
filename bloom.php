@@ -24,7 +24,7 @@ $sampleProducts = [
 $auth_error = "";
 $reg_error  = "";
 
-//try lang ngani
+//try lang ngani  yie
 
 // ── Array ────────────────────────────────────────────────────
 $store_info = array(
