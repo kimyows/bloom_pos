@@ -1,5 +1,5 @@
-
 <?php
+//mara try
 session_start();
 // ── Cookies: Remember Me ─────────────────────────────────────
 $remembered_id = isset($_COOKIE['bloom_remember_id'])
@@ -10,10 +10,10 @@ if (!is_dir("uploads")) {
     mkdir("uploads", 0777, true);
 }
 
+// Khylexoxo
+date_default_timezone_set("Asia/Manila");  
 
-date_default_timezone_set("Asia/Manila");
-
-include 'Product.inc.php'; //kahit ano
+include 'Product.inc.php';
 $sampleProducts = [
   'flowers'     => new FlowerProduct('FLW-001', 'Red Roses', 99.00, 50),
   'arrangement' => new ArrangementProduct('ARR-001', 'Bridal Bouquet', 599.00, 10),
