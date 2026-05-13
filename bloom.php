@@ -11,7 +11,7 @@ if (!is_dir("uploads")) {
 }
 
 //hello iam khyle
-date_default_timezone_set("Asia/Manila"); // trial one two three
+date_default_timezone_set("Asia/Manila"); // trial one two three four AYOKO NAA
 
 
 include 'Product.inc.php';
