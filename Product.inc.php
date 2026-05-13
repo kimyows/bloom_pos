@@ -7,7 +7,7 @@ class Product {
     private $price;
     private $stock;
     private $category;
-    private $description; 
+    private $description;
 
     public function __construct($sku, $name, $price, $stock, $category, $description) {
         $this->sku         = $sku;

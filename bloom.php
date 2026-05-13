@@ -8,7 +8,8 @@ $remembered_id = isset($_COOKIE['bloom_remember_id'])
 if (!is_dir("uploads")) {
     mkdir("uploads", 0777, true);
 }
- 
+
+//hello my name is mara(trial)
 date_default_timezone_set("Asia/Manila"); 
 
 include 'Product.inc.php';
