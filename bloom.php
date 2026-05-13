@@ -1,5 +1,5 @@
-
 <?php
+//mara try
 session_start();
 // ── Cookies: Remember Me ─────────────────────────────────────
 $remembered_id = isset($_COOKIE['bloom_remember_id'])
@@ -10,9 +10,7 @@ if (!is_dir("uploads")) {
     mkdir("uploads", 0777, true);
 }
 
-//hello iam khyle
-date_default_timezone_set("Asia/Manila"); // trial one two three four AYOKO NAA
-
+date_default_timezone_set("Asia/Manila"); 
 
 include 'Product.inc.php';
 $sampleProducts = [
