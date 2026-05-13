@@ -1,5 +1,4 @@
 <?php
-//mara toh
 session_start();
 // ── Cookies: Remember Me ─────────────────────────────────────
 $remembered_id = isset($_COOKIE['bloom_remember_id'])
@@ -9,7 +8,7 @@ $remembered_id = isset($_COOKIE['bloom_remember_id'])
 if (!is_dir("uploads")) {
     mkdir("uploads", 0777, true);
 }
-
+ 
 date_default_timezone_set("Asia/Manila"); 
 
 include 'Product.inc.php';
