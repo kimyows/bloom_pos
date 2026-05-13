@@ -10,8 +10,7 @@ if (!is_dir("uploads")) {
     mkdir("uploads", 0777, true);
 }
 
-date_default_timezone_set("Asia/Manila");  // trial one two three four TRIAL PU
-// tainang git to
+date_default_timezone_set("Asia/Manila");  
 
 include 'Product.inc.php';
 $sampleProducts = [
@@ -24,6 +23,9 @@ $sampleProducts = [
 
 $auth_error = "";
 $reg_error  = "";
+
+//try lang ngani  yie
+// try ko rin
 
 // ── Array ────────────────────────────────────────────────────
 $store_info = array(
