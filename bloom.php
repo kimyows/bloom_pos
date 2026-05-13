@@ -24,9 +24,6 @@ $sampleProducts = [
 $auth_error = "";
 $reg_error  = "";
 
-//try lang ngani  yie
-// try ko rin
-
 // ── Array ────────────────────────────────────────────────────
 $store_info = array(
   "name"     => "Bloom POS",
