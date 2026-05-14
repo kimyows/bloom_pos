@@ -24,4 +24,13 @@ spl_autoload_register('customAutoloader');
 // Include existing Product classes
 require_once 'Product.inc.php';
 
+/**
+ * Returns extension-related information for a file
+ * @param string $fileName The name or path of the file
+ * @return string The file extension (e.g., 'jpg', 'php')
+ */
+function info($fileName) {
+    return pathinfo($fileName, PATHINFO_EXTENSION);
+}
+
 ?>
