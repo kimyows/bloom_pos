@@ -11,7 +11,7 @@ if (!is_dir("uploads")) {
 
 date_default_timezone_set("Asia/Manila");  
 
-include 'Product.inc.php';
+require_once 'functions.php';
 $sampleProducts = [
   'flowers'     => new FlowerProduct('FLW-001', 'Red Roses', 99.00, 50),
   'arrangement' => new ArrangementProduct('ARR-001', 'Bridal Bouquet', 599.00, 10),
