@@ -1,4 +1,6 @@
 <?php
+include 'Inventory.inc.php';
+
 // Base Class demonstrating Encapsulation
 class Product {
     // Private properties: cannot be directly accessed outside the class
@@ -8,23 +10,25 @@ class Product {
     private $stock;
     private $category;
     private $description;
+    private $discount_id;
 
-    public function __construct($sku, $name, $price, $stock, $category, $description) {
+    public function __construct(string $sku, string $name, float $price, int $stock, string $category, string $description, ?string $discount_id = null) {
         $this->sku         = $sku;
         $this->name        = $name;
         $this->price       = $price;
         $this->stock       = $stock;
         $this->category    = $category;
         $this->description = $description;
+        $this->discount_id = $discount_id;
     }
 
     // Magic Getter: Safely read private properties
-    public function __get($name) {
+    public function __get(string $name): mixed {
         return $this->$name;
     }
 
     // Magic Setter: Safely update properties with validation
-    public function __set($name, $value) {
+    public function __set(string $name, mixed $value): void {
         if ($name === 'price' && $value < 0) {
             $this->price = 0; // Prevent negative prices
         } elseif ($name === 'stock' && $value < 0) {
@@ -35,46 +39,64 @@ class Product {
     }
 
     // Magic String Method: Replaces a getSummary() function
-    public function __toString() {
+    public function __toString(): string {
         return $this->name . " (" . $this->sku . ") - ₱" . number_format($this->price, 2) . " | Stock: " . $this->stock . " [" . $this->category . "]";
     }
 
     // Check if item is in stock
-    public function isAvailable() {
+    public function isAvailable(): bool {
         return $this->stock > 0;
     }
 
     // Reduce stock after a sale
-    public function deductStock($qty) {
+    public function deductStock(int $qty): bool {
         if ($qty > $this->stock) return false;
         $this->stock -= $qty;
         return true;
+    }
+
+    // Put product on sale
+    public function putOnSale(mysqli $conn, string $discount_id): bool {
+        if (putonsale($conn, $this->sku, $discount_id)) {
+            $this->discount_id = $discount_id;
+            return true;
+        }
+        return false;
+    }
+
+    // Take product off sale
+    public function takeOffSale(mysqli $conn): bool {
+        if (takeofsale($conn, $this->sku)) {
+            $this->discount_id = null;
+            return true;
+        }
+        return false;
     }
 }
 
 // Inheritance: Child classes extending the base Product class
 
 class FlowerProduct extends Product {
-    public function __construct($sku, $name, $price, $stock) {
-        parent::__construct($sku, $name, $price, $stock, "Flowers", "Fresh cut flowers");
+    public function __construct(string $sku, string $name, float $price, int $stock) {
+        parent::__construct($sku, $name, $price, $stock, "Flowers", "Fresh cut flowers", null);
     }
 }
 
 class ArrangementProduct extends Product {
-    public function __construct($sku, $name, $price, $stock) {
-        parent::__construct($sku, $name, $price, $stock, "Arrangements", "Custom flower arrangement");
+    public function __construct(string $sku, string $name, float $price, int $stock) {
+        parent::__construct($sku, $name, $price, $stock, "Arrangements", "Custom flower arrangement", null);
     }
 }
 
 class PlantProduct extends Product {
-    public function __construct($sku, $name, $price, $stock) {
-        parent::__construct($sku, $name, $price, $stock, "Plants", "Live potted plant");
+    public function __construct(string $sku, string $name, float $price, int $stock) {
+        parent::__construct($sku, $name, $price, $stock, "Plants", "Live potted plant", null);
     }
 }
 
 class AccessoryProduct extends Product {
-    public function __construct($sku, $name, $price, $stock) {
-        parent::__construct($sku, $name, $price, $stock, "Accessories", "Vases, ribbons, and add-ons");
+    public function __construct(string $sku, string $name, float $price, int $stock) {
+        parent::__construct($sku, $name, $price, $stock, "Accessories", "Vases, ribbons, and add-ons", null);
     }
 }
 ?>
