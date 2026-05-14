@@ -1,16 +1,15 @@
 <?php
-include 'Inventory.inc.php';
 
 // Base Class demonstrating Encapsulation
 class Product {
     // Private properties: cannot be directly accessed outside the class
-    private $sku;
-    private $name;
-    private $price;
-    private $stock;
-    private $category;
-    private $description;
-    private $discount_id;
+    private string $sku;
+    private string $name;
+    private float $price;
+    private int $stock;
+    private string $category;
+    private string $description;
+    private ?string $discount_id;
 
     public function __construct(string $sku, string $name, float $price, int $stock, string $category, string $description, ?string $discount_id = null) {
         $this->sku         = $sku;
@@ -78,25 +77,25 @@ class Product {
 
 class FlowerProduct extends Product {
     public function __construct(string $sku, string $name, float $price, int $stock) {
-        parent::__construct($sku, $name, $price, $stock, "Flowers", "Fresh cut flowers", null);
+        parent::__construct($sku, $name, $price, $stock, "Flowers", "Fresh cut flowers");
     }
 }
 
 class ArrangementProduct extends Product {
     public function __construct(string $sku, string $name, float $price, int $stock) {
-        parent::__construct($sku, $name, $price, $stock, "Arrangements", "Custom flower arrangement", null);
+        parent::__construct($sku, $name, $price, $stock, "Arrangements", "Custom flower arrangement");
     }
 }
 
 class PlantProduct extends Product {
     public function __construct(string $sku, string $name, float $price, int $stock) {
-        parent::__construct($sku, $name, $price, $stock, "Plants", "Live potted plant", null);
+        parent::__construct($sku, $name, $price, $stock, "Plants", "Live potted plant");
     }
 }
 
 class AccessoryProduct extends Product {
     public function __construct(string $sku, string $name, float $price, int $stock) {
-        parent::__construct($sku, $name, $price, $stock, "Accessories", "Vases, ribbons, and add-ons", null);
+        parent::__construct($sku, $name, $price, $stock, "Accessories", "Vases, ribbons, and add-ons");
     }
 }
 ?>

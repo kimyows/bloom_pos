@@ -9,9 +9,10 @@ if (!is_dir("uploads")) {
     mkdir("uploads", 0777, true);
 }
 
-date_default_timezone_set("Asia/Manila");  
+date_default_timezone_set("Asia/Manila");
 
-require_once 'functions.php';
+require_once __DIR__ . '/Inventory.inc.php';
+
 $sampleProducts = [
   'flowers'     => new FlowerProduct('FLW-001', 'Red Roses', 99.00, 50),
   'arrangement' => new ArrangementProduct('ARR-001', 'Bridal Bouquet', 599.00, 10),
