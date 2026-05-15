@@ -1,5 +1,7 @@
 <?php
 
+
+
 /**automatically load classes without requiring manual includes*/
 
 // Define the base directories for our class files
@@ -55,6 +57,70 @@ function takeofsale(mysqli $conn, string $sku): bool {
     $result = $stmt->execute();
     $stmt->close();
     return $result;
+}
+
+function cloneProductBySku(mysqli $conn, string $sku): ?string {
+    $stmt = $conn->prepare(
+        "SELECT inventory.*, categories.category_name
+         FROM inventory
+         LEFT JOIN categories ON inventory.category_id = categories.category_id
+         WHERE inventory.sku = ?"
+    );
+    if (!$stmt) {
+        return null;
+    }
+
+    $stmt->bind_param("s", $sku);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result ? $result->fetch_assoc() : null;
+    $stmt->close();
+
+    if (!$row) {
+        return null;
+    }
+
+    $product = Product::fromDbRow($row);
+    $copy = $product->cloneProduct();
+
+    $category_id = $row['category_id'] !== null ? $row['category_id'] : null;
+    $discount_id = $row['discount_id'] ?? null;
+    $image_url = $row['image_url'] ?? '';
+
+    $insert = $conn->prepare(
+        "INSERT INTO inventory (sku, product_name, price, stock_qty, category_id, discount_id, image_url)
+         VALUES (?, ?, ?, ?, ?, ?, ?)"
+    );
+    if (!$insert) {
+        return null;
+    }
+
+    $insert->bind_param(
+        "ssdisss",
+        $copy->sku,
+        $copy->name,
+        $copy->price,
+        $copy->stock,
+        $category_id,
+        $discount_id,
+        $image_url
+    );
+
+    if (!$insert->execute()) {
+        $insert->close();
+        return null;
+    }
+
+    $insert->close();
+
+    $log = $conn->prepare("INSERT INTO inventory_logs (sku, action_type, qty_changed) VALUES (?, 'CLONE', 1)");
+    if ($log) {
+        $log->bind_param("s", $copy->sku);
+        $log->execute();
+        $log->close();
+    }
+
+    return $copy->sku;
 }
 
 ?>

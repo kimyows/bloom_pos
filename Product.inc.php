@@ -42,6 +42,28 @@ class Product {
         return $this->name . " (" . $this->sku . ") - ₱" . number_format($this->price, 2) . " | Stock: " . $this->stock . " [" . $this->category . "]";
     }
 
+    // Clone helper for module use
+    public function cloneProduct(): self {
+        return clone $this;
+    }
+
+    public function __clone() {
+        $this->sku = $this->sku . '_COPY_' . rand(100, 999);
+        $this->name .= ' Copy';
+    }
+
+    public static function fromDbRow(array $row): self {
+        return new self(
+            $row['sku'],
+            $row['product_name'],
+            (float)$row['price'],
+            (int)$row['stock_qty'],
+            (string)($row['category_name'] ?? ''),
+            (string)($row['description'] ?? ''),
+            $row['discount_id'] ?? null
+        );
+    }
+
     // Check if item is in stock
     public function isAvailable(): bool {
         return $this->stock > 0;
