@@ -218,6 +218,80 @@ if ($page === "inventory" && $_SESSION["user_role"] === "Admin") {
     header("Location: ?page=inventory&tab=items");
     exit;
   }
+  if (isset($_POST["clone_sku"])) {
+
+    $sku = $conn->real_escape_string($_POST["clone_sku"]);
+
+    $result = $conn->query("
+      SELECT * FROM inventory
+      WHERE sku='$sku'
+    ");
+    // CLONE
+    if ($result && $result->num_rows > 0) {
+
+      $product = $result->fetch_assoc();
+
+      $new_sku = $product["sku"] . "_COPY_" . rand(100,999);
+
+      $new_name = $conn->real_escape_string(
+        $product["product_name"] . " Copy"
+      );
+
+      $price = $product["price"];
+      $qty = $product["stock_qty"];
+      $cat_id = $product["category_id"] ? $product["category_id"] : "NULL";
+      $disc_id = $product["discount_id"] ? $product["discount_id"] : "NULL";
+
+      $image_url = $conn->real_escape_string($product["image_url"]);
+
+      $conn->query("
+        INSERT INTO inventory
+        (
+          sku,
+          product_name,
+          price,
+          stock_qty,
+          category_id,
+          discount_id,
+          image_url
+        )
+        VALUES
+        (
+          '$new_sku',
+          '$new_name',
+          $price,
+          $qty,
+          $cat_id,
+          $disc_id,
+          '$image_url'
+        )
+      ");
+        $conn->query("
+          INSERT INTO inventory_logs
+          (sku, action_type, qty_changed)
+          VALUES
+          ('$new_sku', 'CLONE', 1)
+        ");
+    }
+    header("Location: ?page=inventory&tab=items");
+    exit;
+  }
+// RESTOCK
+if (isset($_POST["restock_submit"]) && isset($_POST["restock_sku"]) && isset($_POST["restock_qty"])) {
+
+  $sku = $conn->real_escape_string($_POST["restock_sku"]);
+  $qty = (int) $_POST["restock_qty"];
+
+  $conn->query("UPDATE inventory SET stock_qty = stock_qty + $qty WHERE sku = '$sku'");
+
+  $conn->query("
+    INSERT INTO inventory_logs (sku, action_type, qty_changed)
+    VALUES ('$sku', 'RESTOCK', $qty)
+  ");
+
+  header("Location: ?page=inventory&tab=items&restock=success");
+  exit;
+}
   if (isset($_POST["delete_sku"])) {
     $sku = $conn->real_escape_string(isset($_POST["delete_sku"]) ? $_POST["delete_sku"] : "");
     $conn->query("DELETE FROM inventory WHERE sku='$sku'");
@@ -1605,6 +1679,69 @@ function factorial(int $n): int
       border: 1px solid #E0B0B0;
     }
 
+    .inv-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .inv-btn {
+      flex: 1;
+      border: none;
+      padding: 8px 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+      transition: .2s;
+    }
+
+    .clone-btn {
+      background: #EFE6DD;
+      color: var(--espresso);
+    }
+
+    .clone-btn:hover {
+      background: #E3D4C7;
+    }
+
+    .restock-btn {
+      background: var(--chestnut);
+      color: white;
+    }
+
+    .restock-btn:hover {
+      opacity: .9;
+    }
+
+    /* MODAL */
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+
+    .modal-box {
+      width: 340px;
+      background: white;
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: 0 15px 40px rgba(0,0,0,.2);
+    }
+
+    .modal-input {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #DDD;
+      font-size: 14px;
+    }
+
     /* ── Scrollbar ── */
     ::-webkit-scrollbar {
       width: 6px;
@@ -2366,6 +2503,17 @@ function factorial(int $n): int
         clearTimeout(t._t);
         t._t = setTimeout(() => t.style.opacity = '0', 2200);
       }
+      function openRestockModal(sku) {
+
+        document.getElementById("restockModal").style.display = "flex";
+
+        document.getElementById("restock_sku").value = sku;
+      }
+
+      function closeRestockModal() {
+
+        document.getElementById("restockModal").style.display = "none";
+      }
     </script>
 
   <?php else:
@@ -2611,6 +2759,30 @@ function factorial(int $n): int
                           <?php if ($hasDisc): ?><span style="font-size:10px; text-decoration:line-through; color:var(--text-3); margin-left:4px;">&#8369;<?= number_format($item['price'], 2) ?></span><?php endif; ?>
                         </div>
                         <div class="inv-card-stock">Stock: <?= $item['stock_qty'] ?></div>
+                        <div class="inv-actions">
+                        <!-- CLONE -->
+                        <form method="POST">
+                          <input
+                            type="hidden"
+                            name="clone_sku"
+                            value="<?= htmlspecialchars($item['sku'], ENT_QUOTES, 'UTF-8') ?>"
+                          >
+
+                          <button type="submit" class="inv-btn clone-btn">
+                            Clone
+                          </button>
+                        </form>
+
+                        <!-- RESTOCK -->
+                        <button
+                          type="button"
+                          class="inv-btn restock-btn"
+                          onclick="openRestockModal('<?= htmlspecialchars($item['sku'], ENT_QUOTES, 'UTF-8') ?>')"
+                        >
+                          Restock
+                        </button>
+
+                      </div>
                       </div>
                     </div>
                   <?php endforeach; ?>
@@ -3234,6 +3406,58 @@ function factorial(int $n): int
     </div>
 
   <?php endif; ?>
+            <!-- RESTOCK MODAL -->
+            <div id="restockModal" class="modal-overlay" style="display:none;">
+
+              <div class="modal-box">
+
+                <h3 style="margin-bottom:16px;">
+                  Restock Product
+                </h3>
+
+                <form method="POST" action="?page=inventory&tab=items">
+
+                  <input
+                    type="hidden"
+                    name="restock_sku"
+                    id="restock_sku"
+                  >
+
+                  <input
+                    type="number"
+                    name="restock_qty"
+                    placeholder="Enter quantity"
+                    min="1"
+                    required
+                    class="modal-input"
+                  >
+
+                  <div style="display:flex; gap:10px; margin-top:18px;">
+
+                    <button
+                      type="submit"
+                      name="restock_submit"
+                      class="btn btn-primary btn-full"
+                    >
+                      Save
+                    </button>
+
+                    <button
+                      type="button"
+                      class="btn btn-secondary btn-full"
+                      onclick="closeRestockModal()"
+                    >
+                      Cancel
+                    </button>
+
+                  </div>
+
+                </form>
+
+              </div>
+
+            </div>  
+
 </body>
 
 </html>
