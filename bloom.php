@@ -1,5 +1,9 @@
 <?php
 session_start();
+
+// Include session handler
+require_once 'session.php';
+
 // ── Cookies: Remember Me ─────────────────────────────────────
 $remembered_id = isset($_COOKIE['bloom_remember_id'])
   ? htmlspecialchars($_COOKIE['bloom_remember_id'], ENT_QUOTES, 'UTF-8')
@@ -47,18 +51,18 @@ if ($conn->connect_error) {
   exit;
 }
 
-if (!isset($_SESSION["user_id"]) && $page !== "login" && $page !== "register") {
+if (!isLoggedIn() && $page !== "login" && $page !== "register") {
   header("Location: ?page=login");
   exit;
 }
-if (isset($_SESSION["user_id"]) && $page === "login") {
+if (isLoggedIn() && $page === "login") {
   header("Location: ?page=dashboard");
   exit;
 }
 
 // ── RBAC ─────────────────────────────────────────────────────
 $restricted_to_admin = ["inventory", "crm", "employees", "reports"];
-if (isset($_SESSION["user_id"]) && $_SESSION["user_role"] !== "Admin" && in_array($page, $restricted_to_admin)) {
+if (isLoggedIn() && $_SESSION["user_role"] !== "Admin" && in_array($page, $restricted_to_admin)) {
   header("Location: ?page=dashboard");
   exit;
 }
@@ -73,11 +77,13 @@ if ($page === "login" && $_SERVER["REQUEST_METHOD"] === "POST") {
   $stmt->execute();
   $row = $stmt->get_result()->fetch_assoc();
   if ($row && strcmp($row["passcode"], $passcode) === 0) {  // strcmp()
-    $_SESSION["user_id"]    = $row["employee_id"];
-    $_SESSION["user_name"]  = $row["full_name"];
-    $_SESSION["user_role"]  = $row["role"];
-    $_SESSION["user_photo"] = isset($row["photo_url"]) ? $row["photo_url"] : ""; // ── NEW ──
-    $_SESSION["login_time"] = date("Y-m-d H:i:s");
+    // Initialize session on successful login
+    initializeSession(
+        $row["employee_id"],
+        $row["full_name"],
+        $row["role"],
+        isset($row["photo_url"]) ? $row["photo_url"] : ""
+    );
     header("Location: ?page=dashboard");
     exit;
   }
@@ -124,7 +130,7 @@ if ($page === "register" && $_SERVER["REQUEST_METHOD"] === "POST") {
 // ── Logout ────────────────────────────────────────────────────
 if ($page === "logout") {
   setcookie('bloom_remember_id', '', time() - 3600, '/'); // ← delete cookie
-  session_destroy();
+  destroySession();
   header("Location: ?page=login");
   exit;
 }

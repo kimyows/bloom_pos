@@ -24,6 +24,9 @@ spl_autoload_register('customAutoloader');
 // Include existing Product classes
 require_once 'Product.inc.php';
 
+// Include session handler for POS session management
+require_once 'session.php';
+
 /**
  * Returns extension-related information for a file
  * @param string $fileName The name or path of the file
