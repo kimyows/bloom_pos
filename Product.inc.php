@@ -12,7 +12,7 @@ class Product {
     private ?string $discount_id;
 
     public function __construct(string $sku, string $name, float $price, int $stock, string $category, string $description, ?string $discount_id = null) {
-        $this->sku         = $sku;
+        $this->sku         = $sku; //$this->sku is the unique identifier for the product, set at construction and not meant to be changed
         $this->name        = $name;
         $this->price       = $price;
         $this->stock       = $stock;
@@ -22,12 +22,12 @@ class Product {
     }
 
     // Magic Getter: Safely read private properties
-    public function __get(string $name): mixed {
+    public function __get(string $name): mixed { //__get() to allow read-only access to private properties
         return $this->$name;
     }
 
     // Magic Setter: Safely update properties with validation
-    public function __set(string $name, mixed $value): void {
+    public function __set(string $name, mixed $value): void { //__set() to validate price and stock values before setting
         if ($name === 'price' && $value < 0) {
             $this->price = 0; // Prevent negative prices
         } elseif ($name === 'stock' && $value < 0) {
@@ -38,7 +38,7 @@ class Product {
     }
 
     // Magic String Method: Replaces a getSummary() function
-    public function __toString(): string {
+    public function __toString(): string { //toString() to provide a human-readable summary of the product when treated as a string, replacing the need for a separate getSummary() method
         return $this->name . " (" . $this->sku . ") - ₱" . number_format($this->price, 2) . " | Stock: " . $this->stock . " [" . $this->category . "]";
     }
 
@@ -47,7 +47,7 @@ class Product {
         return clone $this;
     }
 
-    public function __clone() {
+    public function __clone() { //clone() to modify the SKU and name when a product is cloned, ensuring the new product has a unique identifier and name
         $this->sku = $this->sku . '_COPY_' . rand(100, 999);
         $this->name .= ' Copy';
     }
@@ -77,7 +77,7 @@ class Product {
     }
 
     // Put product on sale
-    public function putOnSale(mysqli $conn, string $discount_id): bool {
+    public function putOnSale(mysqli $conn, string $discount_id): bool { //putonsale() to apply a discount to the product in the database and update the object's discount_id property
         if (putonsale($conn, $this->sku, $discount_id)) {
             $this->discount_id = $discount_id;
             return true;
@@ -86,7 +86,7 @@ class Product {
     }
 
     // Take product off sale
-    public function takeOffSale(mysqli $conn): bool {
+    public function takeOffSale(mysqli $conn): bool { //takeofsale() to remove the discount from the product in the database and update the object's discount_id property
         if (takeofsale($conn, $this->sku)) {
             $this->discount_id = null;
             return true;
@@ -97,8 +97,8 @@ class Product {
 
 // Inheritance: Child classes extending the base Product class
 
-class FlowerProduct extends Product {
-    public function __construct(string $sku, string $name, float $price, int $stock) {
+class FlowerProduct extends Product { //extends Product to create a specific type of product with preset category and description values for flowers, demonstrating inheritance
+    public function __construct(string $sku, string $name, float $price, int $stock) { //constructor for FlowerProduct that calls the parent constructor with specific category and description values for flowers
         parent::__construct($sku, $name, $price, $stock, "Flowers", "Fresh cut flowers");
     }
 }

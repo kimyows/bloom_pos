@@ -12,7 +12,7 @@ define('CLASSES_PATH', BASE_PATH . '/classes');
  * @param string $class The fully qualified class name
  * @return void
  */
-function customAutoloader(string $class): void {
+function customAutoloader(string $class): void { //$class is the name of the class being instantiated, passed by PHP to the autoloader function
     // Convert class name to file path
     $file = CLASSES_PATH . '/' . str_replace('\\', '/', $class) . '.php';
     
@@ -34,7 +34,7 @@ require_once 'Product.inc.php';
  * @return string The file extension (e.g., 'jpg', 'php')
  */
 function info(string $fileName): string {
-    return pathinfo($fileName, PATHINFO_EXTENSION);
+    return pathinfo($fileName, PATHINFO_EXTENSION); //INFO_EXTENSION returns the file extension without the dot
 }
 
 function putonsale(mysqli $conn, string $sku, string $discount_id): bool {

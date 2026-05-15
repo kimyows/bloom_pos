@@ -5,7 +5,7 @@ session_start();
 require_once 'session.php';
 
 // ── Cookies: Remember Me ─────────────────────────────────────
-$remembered_id = isset($_COOKIE['bloom_remember_id'])
+$remembered_id = isset($_COOKIE['bloom_remember_id']) //isset() check to prevent undefined index notice if cookie doesn't exist
   ? htmlspecialchars($_COOKIE['bloom_remember_id'], ENT_QUOTES, 'UTF-8')
   : '';
 // ── Auto-create uploads folder ───────────────────────────────
@@ -13,7 +13,7 @@ if (!is_dir("uploads")) {
     mkdir("uploads", 0777, true);
 }
 
-date_default_timezone_set("Asia/Manila");
+date_default_timezone_set("Asia/Manila"); // Set timezone to Manila
 
 require_once __DIR__ . '/Inventory.inc.php';
 
@@ -29,7 +29,7 @@ $auth_error = "";
 $reg_error  = "";
 
 // ── Array ────────────────────────────────────────────────────
-$store_info = array(
+$store_info = array( // associative array for store details
   "name"     => "Bloom POS",
   "address"  => "Calamba, Laguna",
   "contact"  => "0912-345-6789",
@@ -69,14 +69,14 @@ if (isLoggedIn() && $_SESSION["user_role"] !== "Admin" && in_array($page, $restr
 
 // ── Login ─────────────────────────────────────────────────────
 if ($page === "login" && $_SERVER["REQUEST_METHOD"] === "POST") {
-  $emp_id   = isset($_POST["emp_id"])   ? trim($_POST["emp_id"])  : "";
+  $emp_id   = isset($_POST["emp_id"])   ? trim($_POST["emp_id"])  : ""; //trim() to remove extra whitespace from employee ID input
   $passcode = isset($_POST["passcode"]) ? $_POST["passcode"]      : "";
   // ── UPDATED: also fetch photo_url ──
   $stmt = $conn->prepare("SELECT employee_id, full_name, role, passcode, photo_url FROM employees WHERE employee_id = ?");
   $stmt->bind_param("s", $emp_id);
   $stmt->execute();
   $row = $stmt->get_result()->fetch_assoc();
-  if ($row && strcmp($row["passcode"], $passcode) === 0) {  // strcmp()
+  if ($row && strcmp($row["passcode"], $passcode) === 0) {  // strcmp() for exact string comparison of passcodes
     // Initialize session on successful login
     initializeSession(
         $row["employee_id"],
@@ -102,12 +102,12 @@ if ($page === "register" && $_SERVER["REQUEST_METHOD"] === "POST") {
     $name     = isset($_POST["full_name"]) ? trim($_POST["full_name"]) : "";
     $role     = isset($_POST["role"])      ? $_POST["role"]            : "Cashier";
     $passcode = isset($_POST["passcode"])  ? $_POST["passcode"]        : "";
-    $job_role = (strcasecmp($role, "Admin") === 0) ? "Manager" : "Cashier";
+    $job_role = (strcasecmp($role, "Admin") === 0) ? "Manager" : "Cashier"; // strcasecmp() for case-insensitive role check
 
     $nameCheck = validateStaffName($name);
     if (!is_bool($nameCheck) || $nameCheck !== true) {
         $reg_error = is_bool($nameCheck) ? "Invalid name." : $nameCheck;
-    } elseif (!preg_match("/^[a-zA-Z0-9-]+$/", $emp_id)) {
+    } elseif (!preg_match("/^[a-zA-Z0-9-]+$/", $emp_id)) { //preg_match() to validate employee ID format (only letters, numbers, hyphens)
         $reg_error = "Employee ID may only contain letters, numbers, and hyphens.";
     } else {
         // ── NEW: profile photo upload ──
@@ -295,7 +295,7 @@ if ($page === "crm") {
   if (isset($_POST["add_customer"])) {
     $n = $conn->real_escape_string(isset($_POST["full_name"])    ? $_POST["full_name"]    : "");
     $c = $conn->real_escape_string(isset($_POST["contact_info"]) ? $_POST["contact_info"] : "");
-    if (strpos($c, "@") !== false) {
+    if (strpos($c, "@") !== false) { //strpos() to check if contact info contains "@" before validating as email
       $emailCheck = validateEmail($c);
       if ($emailCheck !== true) {
         $_SESSION["crm_error"] = $emailCheck;
@@ -428,7 +428,7 @@ if ($page === "dashboard") {
 
 $report_period = isset($_GET["period"]) ? $_GET["period"] : "today";
 echo "<!-- [Event] report_period='" . htmlspecialchars($report_period, ENT_QUOTES, 'UTF-8') . "' -->\n";
-switch ($report_period) {
+switch ($report_period) { //switch statement to determine date range for reports based on 'period' query parameter
   case "week":
     $r_where = "DATE(sale_date) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)";
     break;
@@ -454,7 +454,7 @@ echo "<!-- [Event] activeTab='" . htmlspecialchars($activeTab, ENT_QUOTES, 'UTF-
 
 // ══ HELPER FUNCTIONS ═════════════════════════════════════════
 
-function effectivePrice($item)
+function effectivePrice($item) //function to calculate effective price of an item after applying discount if applicable
 {
   $p = floatval($item["price"]);
   if (!empty($item["disc_status"]) && $item["disc_status"] == 1 && !empty($item["discount_value"])) {
@@ -470,7 +470,7 @@ function effectivePrice($item)
 
 function makeInitials($fullName)
 {
-  if (str_word_count($fullName) === 0) return "?";
+  if (str_word_count($fullName) === 0) return "?"; //str_word_count() to check if name is empty or only whitespace
   $words = array_values(array_filter(explode(" ", trim($fullName))));
   if (empty($words)) return "?";
   $initials = "";
@@ -487,7 +487,7 @@ function validateStaffName($name)
   $name = trim($name);
   if (empty($name))                          return "Name is required.";
   if (!preg_match("/^[a-zA-Z ]*$/", $name)) return "Name must contain letters and spaces only.";
-  if (strlen($name) < 3)                     return "Name must be at least 3 characters.";
+  if (strlen($name) < 3)                     return "Name must be at least 3 characters."; //strlen() to check minimum length of staff name
   return true;
 }
 
@@ -502,7 +502,7 @@ function validateEmail($email)
 function generateTransactionRef($employeeId)
 {
   $letters = strtoupper(substr(preg_replace("/[^A-Za-z]/", "", $employeeId), 0, 3));
-  $counter  = 1000 + rand(0, 8999);
+  $counter  = 1000 + rand(0, 8999); //random 4-digit number starting from 1000
   return "TXN-" . $letters . $counter;
 }
 
@@ -2369,7 +2369,7 @@ function factorial(int $n): int
       document.getElementById('sku_scanner').addEventListener('input', function() {
         const q = this.value.toLowerCase();
         document.querySelectorAll('.prod-tile').forEach(el => {
-          el.style.display = el.dataset.name.includes(q) ? '' : 'none';
+          el.style.display = el.dataset.name.includes(q) ? '' : 'none'; //includes for partial match; can switch to startsWith for stricter search
         });
       });
       document.getElementById('sku_scanner').addEventListener('keydown', function(e) {

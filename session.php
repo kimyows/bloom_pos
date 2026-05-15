@@ -24,7 +24,7 @@ function initializeSession($employee_id, $full_name, $role, $photo_url = '') {
  * Check if user is logged in and session is valid
  */
 function isLoggedIn() {
-    return isset($_SESSION['user_id']) && !isSessionExpired();
+    return isset($_SESSION['user_id']) && !isSessionExpired(); // Check if session has expired
 }
 
 /**
@@ -91,7 +91,7 @@ function destroySession() {
 function initializeTransactionSession() {
     $_SESSION['current_transaction'] = array(
         'transaction_id'   => uniqid('TXN-', true),
-        'start_time'       => date("Y-m-d H:i:s"),
+        'start_time'       => date("Y-m-d H:i:s"), //date() to store transaction start time
         'items'            => array(),
         'total_amount'     => 0.00,
         'discount_amount'  => 0.00,
