@@ -200,8 +200,8 @@ if ($page === "inventory" && $_SESSION["user_role"] === "Admin") {
     }
 
     $qty        = (int)(isset($_POST["qty"])                              ? $_POST["qty"]          : 0);
-    $cat_id     = (isset($_POST["category_id"]) && $_POST["category_id"] !== "") ? (int)$_POST["category_id"] : "NULL";
-    $disc_id    = (isset($_POST["discount_id"])  && $_POST["discount_id"]  !== "") ? (int)$_POST["discount_id"]  : "NULL";
+    $cat_id     = (isset($_POST["category_id"]) && $_POST["category_id"] !== "") ? (int)$_POST["category_id"] : null;
+    $disc_id    = (isset($_POST["discount_id"])  && $_POST["discount_id"]  !== "") ? (int)$_POST["discount_id"]  : null;
     $image_path = "";
     if (isset($_FILES["product_image"]) && $_FILES["product_image"]["error"] === 0) {
       $dir = "uploads/";
@@ -209,12 +209,57 @@ if ($page === "inventory" && $_SESSION["user_role"] === "Admin") {
       $image_path = $dir . time() . "_" . basename($_FILES["product_image"]["name"]);
       move_uploaded_file($_FILES["product_image"]["tmp_name"], $image_path);
     }
+
     if ($is_update) {
-      $img_sql = $image_path ? ", image_url='$image_path'" : "";
-      $conn->query("UPDATE inventory SET sku='$sku',product_name='$name',price=$price,stock_qty=$qty,category_id=$cat_id,discount_id=$disc_id $img_sql WHERE sku='$old_sku'");
+      if ($image_path) {
+        $stmt = $conn->prepare("UPDATE inventory SET sku = ?, product_name = ?, price = ?, stock_qty = ?, category_id = ?, image_url = ? WHERE sku = ?");
+        $stmt->bind_param("ssdiiss", $sku, $name, $price, $qty, $cat_id, $image_path, $old_sku);
+      } else {
+        $stmt = $conn->prepare("UPDATE inventory SET sku = ?, product_name = ?, price = ?, stock_qty = ?, category_id = ? WHERE sku = ?");
+        $stmt->bind_param("ssdiis", $sku, $name, $price, $qty, $cat_id, $old_sku);
+      }
     } else {
-      $conn->query("INSERT INTO inventory (sku,product_name,price,stock_qty,category_id,discount_id,image_url) VALUES ('$sku','$name',$price,$qty,$cat_id,$disc_id,'$image_path')");
+      $stmt = $conn->prepare("INSERT INTO inventory (sku, product_name, price, stock_qty, category_id, image_url) VALUES (?, ?, ?, ?, ?, ?)");
+      $stmt->bind_param("ssdiss", $sku, $name, $price, $qty, $cat_id, $image_path);
     }
+
+    $dbSuccess = false;
+    if ($stmt) {
+      $dbSuccess = $stmt->execute();
+      $stmt->close();
+    }
+
+    $category_name = '';
+    if ($cat_id !== null) {
+      $categoryStmt = $conn->prepare("SELECT category_name FROM categories WHERE category_id = ?");
+      if ($categoryStmt) {
+        $categoryStmt->bind_param("i", $cat_id);
+        $categoryStmt->execute();
+        $categoryStmt->bind_result($category_name);
+        $categoryStmt->fetch();
+        $categoryStmt->close();
+      }
+    }
+
+    $productRow = [
+      'sku' => $sku,
+      'product_name' => $name,
+      'price' => $price,
+      'stock_qty' => $qty,
+      'category_name' => $category_name,
+      'description' => '',
+      'discount_id' => null,
+    ];
+
+    if ($dbSuccess) {
+      $product = Product::fromDbRow($productRow);
+      if ($disc_id !== null) {
+        $product->putOnSale($conn, (string)$disc_id);
+      } else {
+        $product->takeOffSale($conn);
+      }
+    }
+
     header("Location: ?page=inventory&tab=items");
     exit;
   }
