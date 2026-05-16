@@ -62,9 +62,9 @@ function takeofsale(mysqli $conn, string $sku): bool {
 function cloneProductBySku(mysqli $conn, string $sku): ?string {
     $stmt = $conn->prepare(
         "SELECT inventory.*, categories.category_name
-         FROM inventory
-         LEFT JOIN categories ON inventory.category_id = categories.category_id
-         WHERE inventory.sku = ?"
+        FROM inventory
+        LEFT JOIN categories ON inventory.category_id = categories.category_id
+        WHERE inventory.sku = ?"
     );
     if (!$stmt) {
         return null;
@@ -89,7 +89,7 @@ function cloneProductBySku(mysqli $conn, string $sku): ?string {
 
     $insert = $conn->prepare(
         "INSERT INTO inventory (sku, product_name, price, stock_qty, category_id, discount_id, image_url)
-         VALUES (?, ?, ?, ?, ?, ?, ?)"
+        VALUES (?, ?, ?, ?, ?, ?, ?)"
     );
     if (!$insert) {
         return null;
