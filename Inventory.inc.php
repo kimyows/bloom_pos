@@ -37,6 +37,7 @@ function info(string $fileName): string {
     return pathinfo($fileName, PATHINFO_EXTENSION); //INFO_EXTENSION returns the file extension without the dot
 }
 
+// putonsale() to apply a discount to the product in the database and update the object's discount_id property
 function putonsale(mysqli $conn, string $sku, string $discount_id): bool {
     $stmt = $conn->prepare("UPDATE inventory SET discount_id = ? WHERE sku = ?");
     if (!$stmt) {
@@ -48,6 +49,7 @@ function putonsale(mysqli $conn, string $sku, string $discount_id): bool {
     return $result;
 }
 
+// takeofsale() to remove the discount from the product in the database and update the object's discount_id property
 function takeofsale(mysqli $conn, string $sku): bool {
     $stmt = $conn->prepare("UPDATE inventory SET discount_id = NULL WHERE sku = ?");
     if (!$stmt) {
