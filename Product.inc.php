@@ -48,20 +48,35 @@ class Product {
     }
 
     public function __clone() { //clone() to modify the SKU and name when a product is cloned, ensuring the new product has a unique identifier and name
-        $this->sku = $this->sku . '_COPY_' . rand(100, 999);
-        $this->name .= ' Copy';
+        $this->sku = $this->sku . '-COPY';
+        $this->name .= ' (Copy)';
     }
 
     public static function fromDbRow(array $row): self {
-        return new self(
-            $row['sku'],
-            $row['product_name'],
-            (float)$row['price'],
-            (int)$row['stock_qty'],
-            (string)($row['category_name'] ?? ''),
-            (string)($row['description'] ?? ''),
-            $row['discount_id'] ?? null
-        );
+        // Factory Method: instantiate the correct subclass based on category
+        $category = $row['category_name'] ?? '';
+        $sku = $row['sku'];
+        $name = $row['product_name'];
+        $price = (float)$row['price'];
+        $stock = (int)$row['stock_qty'];
+        $description = (string)($row['description'] ?? '');
+        $discount_id = $row['discount_id'] ?? null;
+
+        // Instantiate the appropriate subclass
+        $product = match($category) {
+            'Flowers' => new FlowerProduct($sku, $name, $price, $stock),
+            'Arrangements' => new ArrangementProduct($sku, $name, $price, $stock),
+            'Plants' => new PlantProduct($sku, $name, $price, $stock),
+            'Accessories' => new AccessoryProduct($sku, $name, $price, $stock),
+            default => new self($sku, $name, $price, $stock, $category, $description, $discount_id),
+        };
+
+        // Set discount_id if present
+        if ($discount_id !== null) {
+            $product->discount_id = $discount_id;
+        }
+
+        return $product;
     }
 
     // Check if item is in stock
@@ -86,8 +101,8 @@ class Product {
     }
 
     // Take product off sale
-    public function takeOffSale(mysqli $conn): bool { //takeofsale() to remove the discount from the product in the database and update the object's discount_id property
-        if (takeofsale($conn, $this->sku)) {
+    public function takeOffSale(mysqli $conn): bool { //removeDiscountFromProduct() to remove the discount from the product in the database and update the object's discount_id property
+        if (removeDiscountFromProduct($conn, $this->sku)) {
             $this->discount_id = null;
             return true;
         }

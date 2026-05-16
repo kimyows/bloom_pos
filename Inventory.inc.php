@@ -49,8 +49,8 @@ function putonsale(mysqli $conn, string $sku, string $discount_id): bool {
     return $result;
 }
 
-// takeofsale() to remove the discount from the product in the database and update the object's discount_id property
-function takeofsale(mysqli $conn, string $sku): bool {
+// removeDiscountFromProduct() to remove the discount from the product in the database and update the object's discount_id property
+function removeDiscountFromProduct(mysqli $conn, string $sku): bool {
     $stmt = $conn->prepare("UPDATE inventory SET discount_id = NULL WHERE sku = ?");
     if (!$stmt) {
         return false;
@@ -85,6 +85,9 @@ function cloneProductBySku(mysqli $conn, string $sku): ?string {
     $product = Product::fromDbRow($row);
     $copy = $product->cloneProduct();
 
+    // Reset stock to 0 for the cloned item (placeholder entry with no actual stock)
+    $copy->stock = 0;
+
     $category_id = $row['category_id'] !== null ? $row['category_id'] : null;
     $discount_id = $row['discount_id'] ?? null;
     $image_url = $row['image_url'] ?? '';
@@ -115,7 +118,8 @@ function cloneProductBySku(mysqli $conn, string $sku): ?string {
 
     $insert->close();
 
-    $log = $conn->prepare("INSERT INTO inventory_logs (sku, action_type, qty_changed) VALUES (?, 'CLONE', 1)");
+    // Log with qty_changed = 0 since this is a placeholder entry with no actual stock added
+    $log = $conn->prepare("INSERT INTO inventory_logs (sku, action_type, qty_changed) VALUES (?, 'CLONE', 0)");
     if ($log) {
         $log->bind_param("s", $copy->sku);
         $log->execute();
