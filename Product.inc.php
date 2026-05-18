@@ -83,7 +83,7 @@ class Product {
     public function isAvailable(): bool {
         return $this->stock > 0;
     }
-
+ 
     // Reduce stock after a sale
     public function deductStock(int $qty): bool {
         if ($qty > $this->stock) return false;

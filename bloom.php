@@ -1,6 +1,6 @@
 <?php
 session_start();
-
+ 
 // Include session handler
 require_once 'session.php';
 

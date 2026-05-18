@@ -125,7 +125,7 @@ function cloneProductBySku(mysqli $conn, string $sku): ?string {
         $log->execute();
         $log->close();
     }
-
+ 
     return $copy->sku;
 }
 

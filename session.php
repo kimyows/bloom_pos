@@ -167,7 +167,7 @@ function updateTransactionTotals() {
     if (!isset($_SESSION['current_transaction'])) {
         return;
     }
-    
+     
     $subtotal = 0;
     foreach ($_SESSION['current_transaction']['items'] as $item) {
         $subtotal += $item['subtotal'];
